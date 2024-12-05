@@ -1,0 +1,20 @@
+[
+    {
+        "medal": "Gold",
+        "athlete": "Steve Smith",
+        "nationality": "United Kingdom",
+        "result": "Unknown Result"
+    },
+    {
+        "medal": "Silver",
+        "athlete": "Tim Forsyth",
+        "nationality": "Australia",
+        "result": "Unknown Result"
+    },
+    {
+        "medal": "Bronze",
+        "athlete": "Takahiro Kimino",
+        "nationality": "Japan",
+        "result": "Unknown Result"
+    }
+]

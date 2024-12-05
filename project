@@ -1,0 +1,58 @@
+import scrapy
+import csv
+import json
+import sqlite3
+
+# Specify the path to the HTML file
+file_path = "/Users/johannvarghese/Downloads/1992_World_Junior_Championships_in_Athletics_–_Men's_high_jump.txt"
+
+# Open the file and read its content
+with open(file_path, 'r', encoding='utf-8') as f:
+    file_content = f.read()
+
+# Convert the file content into a Scrapy response object
+response = scrapy.http.TextResponse(url=file_path, body=file_content, encoding='utf-8')
+
+# Extract data from the table using XPath
+table = response.xpath('//table')[1].xpath('tbody')
+
+# Prepare data for CSV, JSON, and SQLite
+data = []
+
+for tr in table.xpath('tr'):
+    # Extract medal and athlete names
+    medal = tr.xpath('td/b/text()').extract_first(default="Unknown Medal")
+    athlete = tr.xpath('td/a/text()').extract_first(default="Unknown Athlete")
+    nationality = tr.xpath('td/small/i/span/a/text()').extract_first(default="Unknown Height")
+    result = tr.xpath('td[4]/b/text()').extract_first(default="Unknown Result")
+    data.append({"medal": medal, "athlete": athlete, "nationality": nationality, "result": result})
+
+# Write to CSV
+with open('medals.csv', mode='w', newline='', encoding='utf-8') as file:
+    writer = csv.writer(file)
+    writer.writerow(["Medal", "Athlete", "Height", "result"])  # Header row
+    for entry in data:
+        writer.writerow([entry['medal'], entry['athlete'], entry['nationality'], entry['result']])
+
+# Write to JSON
+with open('medals.json', mode='w', encoding='utf-8') as file:
+    json.dump(data, file, indent=4)
+
+# Write to SQLite
+conn = sqlite3.connect('medals.db')
+c = conn.cursor()
+c.execute('CREATE TABLE IF NOT EXISTS medals (medal TEXT, athlete TEXT)')
+for entry in data:
+    c.execute("INSERT INTO medals (medal, athlete) VALUES (?, ?)", (entry['medal'], entry['athlete']))
+conn.commit()
+conn.close()
+
+print("Data saved to medals.csv, medals.json, and medals.db")
+
+athlete_rows = response.xpath('//table//tr')
+
+for row in athlete_rows:
+    athlete = row.xpath('td/a/text()').get()
+    medal = row.xpath('td/b/text()').get()
+    nationality = row.xpath('td/small/i/span/a/text()').get()
+    print(f"Athlete: {athlete}, Medal: {medal}, Nationality {nationality}")
